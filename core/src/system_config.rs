@@ -1,19 +1,29 @@
 use async_openai::types::FunctionObject;
+use serde::{Deserialize, Serialize};
 
-use crate::crypto_hash::CryptoHash;
+use crate::{crypto_hash::CryptoHash, state_key};
 
 pub trait RuntimeSystemConfig {
     fn id(&self) -> CryptoHash;
     fn name(&self) -> String;
 }
 
-pub trait LLMSystemConfig: RuntimeSystemConfig {
-    fn get_system_prompt(&self) -> String;
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+pub struct LLMConfig {
+    pub system_prompt: String,
+    pub openai_base_url: String,
+    pub openai_model: String,
+    pub openai_temperature: f32,
+    pub openai_max_tokens: u16,
+    pub functions: Vec<FunctionObject>,
+}
 
-    fn get_openai_base_url(&self) -> String;
-    fn get_openai_model(&self) -> String;
-    fn get_openai_temperature(&self) -> f32;
-    fn get_openai_max_tokens(&self) -> u16;
-    
-    fn get_functions(&self) -> Vec<FunctionObject>;
+impl RuntimeSystemConfig for LLMConfig {
+    fn id(&self) -> CryptoHash {
+        state_key!("llm_config")
+    }
+
+    fn name(&self) -> String {
+        "LLM".to_string()
+    }
 }
