@@ -1,4 +1,4 @@
-use core::{state_key, LLMConfig, Runtime, State, StateDiff};
+use core::{state_key, Instruction, LLMConfig, Runtime, State, StateDiff};
 use std::env;
 
 use anyhow::{anyhow, Result};
@@ -16,13 +16,13 @@ pub struct LlmRuntime {
     client: Client<OpenAIConfig>,
     instructions: Vec<LlmInstruction>,
 
-    state: State<String>,
+    pub state: State<String>,
 }
 
 impl LlmRuntime {
     pub fn new() -> Self {
         let config = OpenAIConfig::new()
-            .with_api_base(env::var("OPENAI_API_BASE").unwrap())
+            .with_api_base(env::var("OPENAI_BASE_URL").unwrap())
             .with_api_key(env::var("OPENAI_API_KEY").unwrap());
 
         let client = Client::build(
@@ -34,19 +34,33 @@ impl LlmRuntime {
         Self { client, instructions: Vec::new(), state: State::default() }
     }
 
+    pub fn inject_system_config(&mut self, system_config: &LLMConfig) -> Result<()> {
+        self.state.storage.insert(system_config.id.clone(), serde_json::to_string(system_config)?);
+        Ok(())
+    }
+
     fn prepare_messages(&self, ix: &LlmInstruction) -> Result<Vec<ChatCompletionRequestMessage>> {
         let mut messages = Vec::new();
+
+        let system_config = self.state.storage.get(&ix.system_config_hash)
+            .ok_or(anyhow!("LLM config not found"))?;
+        let system_config = serde_json::from_str::<LLMConfig>(&system_config)?;
+
+        messages.push(ChatCompletionRequestMessage::System(system_config.system_prompt.clone().into()));
 
         for (user, assistant, _tool_call) in ix.memory.iter() {
             messages.push(ChatCompletionRequestMessage::User(user.clone().into()));
             messages.push(ChatCompletionRequestMessage::Assistant(assistant.clone().into()));
         }
 
+        messages.push(ChatCompletionRequestMessage::User(ix.new_message.clone().into()));
+
         Ok(messages)
     }
 
     fn execute_function_call(&self, call: &FunctionCall) -> Result<()> {
         // TOOD: push it into the queue
+        println!("Function call: {:?}", call);
         Ok(())
     }
 
@@ -94,7 +108,9 @@ impl LlmRuntime {
         let response = self.client
             .chat()
             .create(request)
-            .await?;
+            .await;
+
+        let response = response?;
 
         let content = response
             .choices
@@ -139,11 +155,13 @@ impl Runtime<LlmInstruction, String> for LlmRuntime {
     type Error = anyhow::Error;
 
     fn push_instruction(&mut self, instruction: LlmInstruction) {
-        self.instructions.push(instruction);
+        let mut ix = instruction;
+        ix.prepare(&self.state).unwrap();
+        self.instructions.push(ix);
     }
 
     async fn execute_one(&mut self, instruction: &LlmInstruction) -> Result<(), Self::Error> {
-        let (state_diff, usage) = self.send_request(&instruction).await?;
+        let (state_diff, _usage) = self.send_request(&instruction).await?;
         state_diff.apply(&mut self.state);
 
         Ok(())

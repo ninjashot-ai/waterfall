@@ -12,6 +12,7 @@ opt-level = 1
 members = [
     "core",
     "waterfall",
+    "demo",
 ]
 resolver = "2"
 
@@ -38,3 +39,4 @@ base64 = "0.21"
 
 async-trait = "0.1"
 lazy_static = "1.5.0"
+serde_yaml = "0.9.1"

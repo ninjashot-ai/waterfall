@@ -1,4 +1,4 @@
-use crate::state::State;
+use crate::{crypto_hash::CryptoHash, state::State};
 
 #[async_trait::async_trait]
 pub trait Instruction<T> {
@@ -7,7 +7,7 @@ pub trait Instruction<T> {
 
     type Error;
 
-    fn parse_from(value: T) -> Self;
+    fn parse_from(value: T, system_config_hash: CryptoHash) -> Self;
     fn parse_into(&self) -> T;
 
     fn prepare(&mut self, state: &State<T>) -> Result<(), Self::Error>;

@@ -1,5 +1,6 @@
 use crate::instruction::Instruction;
 
+// #[async_trait::async_trait]
 pub trait Runtime<IX: Instruction<T>, T: Clone>: Clone + Send + Sync + 'static  {
     type Error;
 
