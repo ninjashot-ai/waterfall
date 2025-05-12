@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-core = { path = "../core" }
+waterfall-core = { path = "../core" }
 waterfall = { path = "../waterfall" }
 
 serde.workspace = true
@@ -26,3 +26,5 @@ tracing.workspace = true
 
 tokio.workspace = true
 serde_yaml = "0.9.1"
+indicatif = "0.17"
+colored = "2.0"

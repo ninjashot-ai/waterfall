@@ -37,6 +37,6 @@ xsalsa20poly1305 = "0.9"
 blake3 = "^1"
 base64 = "0.21"
 
-async-trait = "0.1"
+async-trait = { version = "0.1" }
 lazy_static = "1.5.0"
 serde_yaml = "0.9.1"

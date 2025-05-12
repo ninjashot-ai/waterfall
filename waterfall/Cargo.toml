@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-core = { path = "../core" }
+waterfall-core = { path = "../core" }
 
 serde.workspace = true
 serde_json.workspace = true
@@ -22,3 +22,5 @@ async-trait.workspace = true
 reqwest.workspace = true
 
 tracing.workspace = true
+indicatif = "0.17"
+colored = "2.0"

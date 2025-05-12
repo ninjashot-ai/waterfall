@@ -1,4 +1,4 @@
-use core::{state_key, CryptoHash, Instruction, State};
+use waterfall_core::{state_key, CryptoHash, Instruction, State};
 
 use anyhow::Result;
 use serde::{Deserialize, Serialize};

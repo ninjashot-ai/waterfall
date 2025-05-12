@@ -1,7 +1,6 @@
 use crate::{crypto_hash::CryptoHash, state::State};
 
-#[async_trait::async_trait]
-pub trait Instruction<T> {
+pub trait Instruction<T>: Clone + Send + Sync + 'static {
     const INSTRUCTION_NAME: &'static str;
     const FALLIBLE: bool;
 

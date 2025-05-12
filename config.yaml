@@ -1,34 +1,29 @@
 orchestrator:
   id: orchestrator
-  system_prompt: You are a helpful assistant that can answer questions and help with tasks.
+  system_prompt: You are a helpful assistant with the ability to operate the browser window for the user.
   model: google/gemini-2.5-pro-preview
   temperature: 0.7
   max_tokens: 10000
   tools:
-    - name: llm_orchestrator
-      description: this function is used to split the input task into smaller LLM calls
+    - name: open_browser_tab
+      description: this function is used to open a new browser tab
       strict: true
       parameters:
         type: object
         properties:
-          input:
+          url:
             type: string
-            description: the prompt to be used for the LLM call
-          model_size:
-            type: string
-            description: the size of the model to be used for the LLM call
-            enum:
-              - small
-              - medium
-              - large
-          temperature:
-            type: number
-            description: the temperature to be used for the LLM call
-            default: 0.7
-          max_tokens:
-            type: number
-            description: the maximum number of tokens to be used for the LLM call
-            default: 1000
+            description: the url to be opened in the new browser tab
         required:
-          - input
-          - model_size
+          - url
+    - name: close_browser_tab
+      description: this function is used to close the current browser tab
+      strict: true
+      parameters:
+        type: object
+        properties:
+          url:
+            type: string
+            description: the url of the browser tab to be closed
+        required:
+          - url
